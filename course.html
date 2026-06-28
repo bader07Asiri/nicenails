@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nice Nails by Asma — دورة جل اكستنشن</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose:#C8686B;--rose-light:#DFA0A2;--rose-pale:#FAF0F0;--rose-deep:#A34E51;
+  --slate:#8FA0AE;--slate-light:#B8C8D2;--slate-pale:#EEF2F5;
+  --cream:#FDFAF8;--white:#fff;
+  --dark:#2C2420;--mid:#5C4E4A;--light:#8C7E7A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--cream);color:var(--dark);direction:rtl;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;background:rgba(253,250,248,.96);backdrop-filter:blur(10px);border-bottom:1px solid rgba(200,104,107,.1);z-index:100;padding:.7rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;color:var(--rose)}
+.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links a{font-size:.85rem;color:var(--mid);text-decoration:none;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--rose)}
+.nav-cta{background:var(--rose);color:#fff!important;padding:7px 18px;border-radius:50px;font-weight:700!important;font-size:.82rem!important}
+.nav-cta:hover{background:var(--rose-deep)!important}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:6rem 1.5rem 3rem;position:relative;overflow:hidden;background:linear-gradient(155deg,var(--cream) 50%,#F7EAEA 100%)}
+.blob{position:absolute;border-radius:50%;pointer-events:none}
+.blob1{top:-180px;right:-120px;width:550px;height:550px;background:radial-gradient(circle,rgba(200,104,107,.12) 0%,transparent 70%)}
+.blob2{bottom:-120px;left:-80px;width:450px;height:450px;background:radial-gradient(circle,rgba(143,160,174,.15) 0%,transparent 70%)}
+.hero-inner{display:grid;grid-template-columns:1.1fr .9fr;gap:3rem;align-items:center;max-width:1020px;width:100%;position:relative;z-index:1}
+.hero-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:3px;color:var(--rose);text-transform:uppercase;margin-bottom:.9rem;opacity:0;animation:fadeUp .7s .1s ease forwards}
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.3rem);font-weight:700;line-height:1.15;margin-bottom:.9rem;opacity:0;animation:fadeUp .7s .2s ease forwards}
+.hero-h1 em{font-style:italic;color:var(--rose)}
+.hero-p{font-size:.95rem;color:var(--mid);line-height:1.85;margin-bottom:1.4rem;opacity:0;animation:fadeUp .7s .3s ease forwards}
+.cert-badge{display:inline-flex;align-items:center;gap:7px;background:var(--white);border:1px solid var(--rose-light);border-radius:50px;padding:7px 16px;font-size:.73rem;color:var(--rose-deep);font-weight:600;margin-bottom:1.8rem;opacity:0;animation:fadeUp .7s .4s ease forwards}
+.hero-btns{display:flex;gap:.8rem;flex-wrap:wrap;opacity:0;animation:fadeUp .7s .5s ease forwards}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:var(--rose);color:#fff;padding:13px 28px;border-radius:50px;font-size:.95rem;font-weight:700;font-family:'Cairo',sans-serif;text-decoration:none;border:none;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--rose-deep);transform:translateY(-2px);box-shadow:0 8px 20px rgba(200,104,107,.3)}
+.btn-outline{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--rose);padding:12px 22px;border-radius:50px;font-size:.88rem;font-weight:600;font-family:'Cairo',sans-serif;text-decoration:none;border:1.5px solid var(--rose-light);cursor:pointer;transition:all .2s}
+.btn-outline:hover{background:var(--rose-pale)}
+.hero-logo{display:flex;align-items:center;justify-content:center;opacity:0;animation:fadeDown .8s .15s ease forwards}
+.hero-logo img{width:340px;max-width:100%;filter:drop-shadow(0 12px 40px rgba(200,104,107,.2))}
+
+/* STATS */
+.stats-bar{background:var(--rose);padding:1.6rem 2rem;display:flex;justify-content:center;gap:3.5rem;flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:#fff}
+.stat-lbl{font-size:.72rem;color:rgba(255,255,255,.8);margin-top:2px;letter-spacing:.5px}
+
+/* SECTIONS */
+section{padding:5.5rem 1.5rem}
+.sec-inner{max-width:980px;margin:0 auto}
+.sec-label{font-size:.68rem;font-weight:700;letter-spacing:3px;color:var(--rose);text-transform:uppercase;margin-bottom:.5rem}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.5vw,2.3rem);font-weight:700;line-height:1.2;margin-bottom:.8rem}
+.sec-title em{font-style:italic;color:var(--rose)}
+.sec-sub{font-size:.93rem;color:var(--mid);line-height:1.85;max-width:580px}
+
+/* FOR WHOM */
+.for-whom{background:var(--white)}
+.aud-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.25rem;margin-top:2.5rem}
+.aud-card{background:var(--cream);border-radius:18px;padding:1.6rem 1.25rem;text-align:center;border:1.5px solid rgba(200,104,107,.1);transition:all .25s;cursor:default}
+.aud-card:hover{border-color:var(--rose-light);transform:translateY(-5px);box-shadow:0 10px 30px rgba(200,104,107,.1)}
+.aud-icon{font-size:2rem;margin-bottom:.9rem}
+.aud-title{font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.4rem}
+.aud-desc{font-size:.82rem;color:var(--light);line-height:1.65}
+
+/* COURSE */
+.course-sec{background:var(--cream)}
+.course-layout{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:start;margin-top:2.5rem}
+.topics-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.topic-item{display:flex;align-items:center;gap:12px;background:var(--white);border-radius:12px;padding:13px 16px;border:1px solid rgba(200,104,107,.09);font-size:.9rem;font-weight:500;transition:all .2s}
+.topic-item:hover{border-color:var(--rose-light);transform:translateX(-4px)}
+.topic-num{width:28px;height:28px;border-radius:50%;background:var(--rose-pale);color:var(--rose);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* PRICE CARD */
+.price-card{background:var(--white);border-radius:22px;border:1px solid rgba(200,104,107,.15);overflow:hidden;position:sticky;top:5.5rem;box-shadow:0 12px 50px rgba(200,104,107,.12)}
+.price-top{background:linear-gradient(135deg,var(--rose) 0%,var(--rose-deep) 100%);padding:2rem 1.5rem;text-align:center}
+.price-top small{font-size:.73rem;color:rgba(255,255,255,.7);display:block;margin-bottom:4px}
+.price-orig{font-size:.9rem;color:rgba(255,255,255,.5);text-decoration:line-through}
+.price-new-row{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:4px 0}
+.price-num{font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:700;color:#fff;line-height:1}
+.price-cur{font-size:.9rem;color:rgba(255,255,255,.85)}
+.disc-tag{display:inline-block;background:rgba(255,255,255,.22);border-radius:20px;padding:4px 14px;font-size:.73rem;color:#fff;margin-top:6px;font-weight:700;letter-spacing:.3px}
+.price-body{padding:1.5rem}
+.meta-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(200,104,107,.1)}
+.meta-row{display:flex;align-items:center;gap:10px;font-size:.87rem;color:var(--mid)}
+.meta-icon{font-size:1rem;flex-shrink:0;width:22px;text-align:center}
+.perks-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:1.5rem}
+.perk-row{display:flex;align-items:flex-start;gap:9px;font-size:.84rem;color:var(--mid);line-height:1.65}
+.perk-check{width:20px;height:20px;border-radius:50%;background:var(--rose-pale);color:var(--rose);font-size:.65rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-weight:900}
+
+/* REGISTER FORM */
+.reg-sec{background:var(--white)}
+.form-wrap{background:var(--cream);border-radius:20px;border:1.5px solid rgba(200,104,107,.12);padding:2rem;margin-top:2rem;max-width:680px;margin-left:auto;margin-right:auto}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:.4rem}
+.form-label{font-size:.82rem;font-weight:700;color:var(--mid)}
+.form-label span{color:var(--rose)}
+.form-input,.form-select,.form-textarea{padding:11px 13px;border:1.5px solid rgba(200,104,107,.2);border-radius:10px;font-family:'Cairo',sans-serif;font-size:.9rem;outline:none;background:var(--white);transition:border-color .2s;width:100%;color:var(--dark)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--rose)}
+.form-textarea{resize:vertical;min-height:80px}
+.commercial-fields{display:none;grid-column:1/-1}
+.commercial-fields.show{display:contents}
+.form-submit{display:flex;width:100%;background:var(--rose);color:#fff;border:none;padding:14px;border-radius:12px;font-size:1rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:all .2s;justify-content:center;align-items:center;gap:8px;margin-top:1.2rem}
+.form-submit:hover{background:var(--rose-deep);transform:translateY(-2px);box-shadow:0 8px 20px rgba(200,104,107,.3)}
+.form-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.form-note{text-align:center;font-size:.75rem;color:var(--light);margin-top:.6rem}
+
+/* SUCCESS */
+.success-box{display:none;background:linear-gradient(135deg,var(--rose),var(--rose-deep));border-radius:20px;padding:2.5rem;text-align:center;color:#fff;margin-top:2rem;max-width:680px;margin-left:auto;margin-right:auto}
+.success-box.show{display:block}
+.success-icon{font-size:3rem;margin-bottom:.8rem}
+.success-title{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:.6rem}
+.success-p{font-size:.9rem;opacity:.9;line-height:1.8;margin-bottom:1.2rem}
+.wa-btn{display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:12px 24px;border-radius:50px;font-size:.9rem;font-weight:700;font-family:'Cairo',sans-serif;text-decoration:none;border:none;cursor:pointer;transition:all .2s}
+.wa-btn:hover{background:#1ebe5c;transform:translateY(-2px)}
+
+/* ABOUT */
+.about-sec{background:var(--cream)}
+.about-inner{max-width:700px;margin:0 auto;text-align:center}
+.about-avatar{width:88px;height:88px;border-radius:50%;background:var(--rose-pale);color:var(--rose);font-family:'Playfair Display',serif;font-size:2.2rem;font-style:italic;display:flex;align-items:center;justify-content:center;border:3px solid var(--rose-light);margin:1.5rem auto 1.2rem}
+.ornament{color:var(--rose-light);font-size:16px;letter-spacing:8px;margin-bottom:1.2rem}
+.about-text{font-size:.93rem;color:var(--mid);line-height:1.95}
+.about-text strong{color:var(--dark);font-weight:700}
+
+/* SOCIAL */
+.social-sec{background:var(--white)}
+.social-cards{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}
+.social-card{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--cream);border-radius:16px;padding:1.25rem 1.75rem;text-align:center;border:1.5px solid rgba(200,104,107,.1);text-decoration:none;transition:all .2s;min-width:155px}
+.social-card:hover{transform:translateY(-4px);border-color:var(--rose-light);box-shadow:0 8px 24px rgba(200,104,107,.1)}
+.social-icon{font-size:26px}
+.social-handle{font-size:.87rem;font-weight:700;color:var(--dark)}
+.social-stat{font-size:.76rem;color:var(--light)}
+
+/* WHATSAPP FLOAT */
+.wa-float{position:fixed;bottom:1.5rem;left:1.5rem;z-index:200;background:#25D366;color:#fff;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:all .2s}
+.wa-float:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,.5)}
+
+/* FOOTER */
+footer{background:var(--dark);color:rgba(255,255,255,.5);text-align:center;padding:2.5rem 1.5rem;font-size:.8rem}
+footer strong{color:#fff}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .75s ease,transform .75s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* MOBILE */
+@media(max-width:720px){
+  .hero-inner,.course-layout{grid-template-columns:1fr}
+  .hero-logo{display:none}
+  .hero-btns{justify-content:center}
+  .stats-bar{gap:1.5rem}
+  .price-card{position:static}
+  .nav-links .nav-cta{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .form-full,.commercial-fields.show{grid-column:1}
+}
+
+/* ── GALLERY ── */
+.gallery-sec{background:var(--white)}
+.gallery-intro{max-width:580px;margin-bottom:2.5rem}
+.gallery-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:auto;
+  gap:14px;
+}
+.g-item{
+  border-radius:16px;
+  overflow:hidden;
+  position:relative;
+  background:var(--rose-pale);
+  aspect-ratio:1/1;
+  cursor:pointer;
+  transition:transform .3s,box-shadow .3s;
+}
+.g-item:hover{transform:scale(1.03);box-shadow:0 12px 35px rgba(200,104,107,.22)}
+.g-item.big{grid-column:span 2;grid-row:span 2;aspect-ratio:unset}
+.g-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.g-item:hover img{transform:scale(1.06)}
+.g-placeholder{
+  width:100%;height:100%;min-height:200px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:var(--rose-light);
+  background:linear-gradient(135deg,var(--rose-pale) 0%,#fff0f0 100%);
+}
+.g-placeholder span{font-size:2.2rem}
+.g-placeholder p{font-size:.75rem;color:var(--rose-light);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.g-overlay{
+  position:absolute;inset:0;background:linear-gradient(to top,rgba(163,78,81,.6) 0%,transparent 55%);
+  opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:14px;
+}
+.g-item:hover .g-overlay{opacity:1}
+.g-tag{font-size:.72rem;color:#fff;font-weight:700;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:20px;backdrop-filter:blur(4px)}
+/* Lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem}
+.lightbox.open{display:flex}
+.lightbox img{max-width:92vw;max-height:90vh;border-radius:14px;object-fit:contain}
+.lb-close{position:absolute;top:18px;left:18px;font-size:1.8rem;color:#fff;cursor:pointer;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.lb-close:hover{background:rgba(255,255,255,.25)}
+.gallery-cta-row{text-align:center;margin-top:2.2rem}
+.gallery-cta-row a{font-size:.9rem;color:var(--rose);font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--rose-light);padding:10px 22px;border-radius:50px;transition:all .2s}
+.gallery-cta-row a:hover{background:var(--rose-pale)}
+@media(max-width:640px){
+  .gallery-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .g-item.big{grid-column:span 2}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Nice Nails</div>
+  <div class="nav-links">
+    <a href="#about">عن أسماء</a>
+    <a href="#course">الدورة</a>
+    <a href="#register" class="nav-cta">سجّلي الآن</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">دورة احترافية معتمدة دولياً · الدمام</div>
+      <h1 class="hero-h1">حوّلي شغفك<br>بالأظافر إلى <em>مشروع</em></h1>
+      <p class="hero-p">دورة جل اكستنشن الشاملة مع <strong>أسماء</strong> — ٩ ساعات تطبيق حقيقي تخرجين منها بكامل الأساسيات ومتمكّنة ١٠٠٪ بإذن الله</p>
+      <div class="cert-badge">🏅 شهادة معتمدة من الأكاديمية البريطانية للتدريب والتطوير</div>
+      <div class="hero-btns">
+        <a href="#register" class="btn-primary">سجّلي الآن ←</a>
+        <a href="#course" class="btn-outline">تفاصيل الدورة</a>
+      </div>
+    </div>
+    <div class="hero-logo">
+      <img src="logo.png" alt="Nice Nails by Asma">
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num">+٤</div><div class="stat-lbl">سنوات خبرة</div></div>
+  <div class="stat-item"><div class="stat-num">٧٩ك</div><div class="stat-lbl">متابع تيك توك</div></div>
+  <div class="stat-item"><div class="stat-num">+٤ك</div><div class="stat-lbl">متابع انستقرام</div></div>
+  <div class="stat-item"><div class="stat-num">١٠٠٪</div><div class="stat-lbl">تمكّن مضمون</div></div>
+</div>
+
+<!-- FOR WHOM -->
+<section class="for-whom reveal">
+  <div class="sec-inner">
+    <div style="text-align:center;margin-bottom:.3rem">
+      <div class="sec-label">لمن هذه الدورة؟</div>
+      <h2 class="sec-title">الدورة مصمّمة <em>لكِ</em></h2>
+    </div>
+    <div class="aud-grid">
+      <div class="aud-card"><div class="aud-icon">🏠</div><div class="aud-title">أصحاب المشاريع الفردية</div><div class="aud-desc">تبين تشتغلين من البيت أو تبنين مشروعك الخاص بأساس قوي</div></div>
+      <div class="aud-card"><div class="aud-icon">💼</div><div class="aud-title">أصحاب الصالونات</div><div class="aud-desc">تريدين تطوير صالونك وتقديم خدمة أظافر جل باحترافية عالية</div></div>
+      <div class="aud-card"><div class="aud-icon">👩‍💼</div><div class="aud-title">عاملات الصالونات</div><div class="aud-desc">طوّري مهاراتك واحصلي على شهادة معتمدة دولياً ترفع مستواك</div></div>
+      <div class="aud-card"><div class="aud-icon">💅</div><div class="aud-title">عاشقات الهواية</div><div class="aud-desc">تحبين الأظافر وتبين تتعلمينها احترافياً لنفسك أو لمن تحبين</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COURSE -->
+<section class="course-sec reveal" id="course">
+  <div class="sec-inner">
+    <div class="sec-label">محتوى الدورة</div>
+    <h2 class="sec-title">٩ ساعات من <em>التطبيق</em> الحقيقي</h2>
+    <p class="sec-sub">٣ أيام تدريب مكثف — ماتطلعين إلا وعندك كل الأساسيات وتتمكنين منها بالكامل ١٠٠٪</p>
+    <div class="course-layout">
+      <ul class="topics-list">
+        <li class="topic-item"><div class="topic-num">١</div>التنظيف الجاف (المنيكير الروسي)</li>
+        <li class="topic-item"><div class="topic-num">٢</div>برد الأظافر بعدة أشكال</li>
+        <li class="topic-item"><div class="topic-num">٣</div>أساسيات الرسم على الأظافر</li>
+        <li class="topic-item"><div class="topic-num">٤</div>الأومبري والفرنش</li>
+        <li class="topic-item"><div class="topic-num">٥</div>بناء الأظافر بالجل</li>
+        <li class="topic-item"><div class="topic-num">٦</div>إعادة التعبئة (ريفيل)</li>
+        <li class="topic-item"><div class="topic-num">٧</div>الإزالة الصحيحة</li>
+      </ul>
+      <div class="price-card">
+        <div class="price-top">
+          <small>سعر الدورة</small>
+          <div class="price-orig">٤٥٠٠ ريال</div>
+          <div class="price-new-row"><div class="price-num">٣٣٧٥</div><div class="price-cur">ريال</div></div>
+          <div class="disc-tag">🔥 خصم ٢٥٪ لفترة محدودة</div>
+        </div>
+        <div class="price-body">
+          <div class="meta-list">
+            <div class="meta-row"><span class="meta-icon">📅</span><span><strong>٣ أيام</strong> تدريب · ٣ ساعات باليوم</span></div>
+            <div class="meta-row"><span class="meta-icon">⏱️</span><span>إجمالي <strong>٩ ساعات</strong> تطبيق عملي</span></div>
+            <div class="meta-row"><span class="meta-icon">🏅</span><span><strong>شهادة معتمدة</strong> دولياً</span></div>
+            <div class="meta-row"><span class="meta-icon">📍</span><span>الدمام — المنطقة الشرقية</span></div>
+          </div>
+          <ul class="perks-list">
+            <li class="perk-row"><div class="perk-check">✓</div>متابعة مجانية لمدة <strong>شهر كامل</strong> بعد الدورة 😍</li>
+            <li class="perk-row"><div class="perk-check">✓</div>توصيات بأفضل البراندات وبدائلها 👍</li>
+            <li class="perk-row"><div class="perk-check">✓</div>تطبيق عملي مكثف — تمكّن ١٠٠٪ 💗</li>
+            <li class="perk-row"><div class="perk-check">✓</div>شهادة دولية معتمدة تفتح لكِ الأبواب ❤️‍🔥</li>
+          </ul>
+          <a href="#register" class="btn-primary" style="width:100%;justify-content:center">سجّلي الآن ←</a>
+          <div style="text-align:center;font-size:.73rem;color:var(--light);margin-top:.6rem">الأماكن محدودة · لا تفوّتي الفرصة</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER FORM -->
+<section class="reg-sec reveal" id="register">
+  <div class="sec-inner">
+    <div style="text-align:center">
+      <div class="sec-label">التسجيل في الدورة</div>
+      <h2 class="sec-title">سجّلي الآن واحجزي <em>مكانك</em></h2>
+      <p class="sec-sub" style="margin:0 auto;text-align:center">بعد التسجيل ستصلك رسالة واتساب تلقائية بتأكيد استلام طلبك، وستتواصل معك أسماء قريباً لتأكيد الحجز.</p>
+    </div>
+
+    <div class="form-wrap" id="reg-form-wrap">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label class="form-label">الاسم الكامل <span>*</span></label>
+          <input type="text" id="f-name" class="form-input" placeholder="اسمك الكامل">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم الجوال (واتساب) <span>*</span></label>
+          <input type="tel" id="f-phone" class="form-input" placeholder="05xxxxxxxx" dir="ltr">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">المدينة <span>*</span></label>
+          <select id="f-city" class="form-select">
+            <option value="">— اختاري مدينتك —</option>
+            <option>الدمام</option>
+            <option>الخبر</option>
+            <option>الظهران</option>
+            <option>القطيف</option>
+            <option>الأحساء</option>
+            <option>الرياض</option>
+            <option>جدة</option>
+            <option>مكة المكرمة</option>
+            <option>المدينة المنورة</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">نوع الكيان <span>*</span></label>
+          <select id="f-entity" class="form-select" onchange="toggleCommercial(this.value)">
+            <option value="">— اختاري —</option>
+            <option value="personal">شخصي / فردي</option>
+            <option value="commercial">تجاري (صالون / مشروع)</option>
+          </select>
+        </div>
+
+        <!-- Commercial Fields -->
+        <div class="commercial-fields form-full" id="commercial-section">
+          <div class="form-group form-full">
+            <label class="form-label">اسم الصالون / المشروع</label>
+            <input type="text" id="f-biz" class="form-input" placeholder="اسم صالونك أو مشروعك">
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">عدد الأفراد المراد تدريبهم</label>
+            <select id="f-count" class="form-select">
+              <option value="">— اختاري —</option>
+              <option>١ فرد</option>
+              <option>٢ أفراد</option>
+              <option>٣ أفراد</option>
+              <option>٤ أفراد</option>
+              <option>٥ أفراد أو أكثر</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">اهتمامك بالدورة</label>
+          <select id="f-interest" class="form-select">
+            <option value="">— اختاري —</option>
+            <option>مشروع شخصي / عمل من المنزل</option>
+            <option>تطوير مهاراتي في الصالون</option>
+            <option>فتح صالون جديد</option>
+            <option>تدريب موظفاتي</option>
+            <option>هواية شخصية</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">عرفتي عنّا من؟</label>
+          <select id="f-src" class="form-select">
+            <option value="">— اختاري —</option>
+            <option>انستقرام</option>
+            <option>تيك توك</option>
+            <option>سناب شات</option>
+            <option>واتساب</option>
+            <option>صديقة / توصية</option>
+            <option>بحث جوجل</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+
+        <div class="form-group form-full">
+          <label class="form-label">أي استفسارات أو ملاحظات؟</label>
+          <textarea id="f-notes" class="form-textarea" placeholder="أي سؤال أو تفصيل تودين إضافته..."></textarea>
+        </div>
+
+      </div>
+      <button class="form-submit" id="submit-btn" onclick="submitForm()">
+        <span id="btn-text">إرسال طلب التسجيل ←</span>
+      </button>
+      <div class="form-note">* بعد الإرسال ستصلك رسالة واتساب تلقائية — سنتواصل معك لتأكيد الحجز</div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-box" id="success-box">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">وصل طلبك بنجاح!</div>
+      <p class="success-p">شكراً لكِ — تم استلام طلب تسجيلك في دورة جل اكستنشن.<br>ستتواصل معك أسماء قريباً لتأكيد حجزك وتفاصيل الموعد. 💅</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-sec reveal" id="about">
+  <div class="sec-inner">
+    <div class="about-inner">
+      <div class="sec-label" style="text-align:center">من أنا؟</div>
+      <h2 class="sec-title" style="text-align:center;max-width:none">أسماء — <em>Nice Nails</em></h2>
+      <div class="ornament">— ✦ —</div>
+      <div class="about-avatar">A</div>
+      <p class="about-text">أنا <strong>أسماء</strong>، أخصائية أظافر ومدربة معتمدة من الدمام. بدأت رحلتي في عالم الأظافر منذ <strong>أكثر من ٤ سنوات</strong>، وطوّرت نفسي حتى أصبحت مدربة بشهادة دولية معتمدة من <strong>الأكاديمية البريطانية للتدريب والتطوير</strong>.<br><br>هدفي الأول هو إنك تطلعين من الدورة وعندك <strong>أساس قوي وصحيح</strong> — تطبيق حقيقي تتمكنين منه بالكامل. أؤمن إن كل واحدة تقدر تحوّل شغفها إلى <strong>مشروع ناجح</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL -->
+<section class="social-sec reveal">
+  <div class="sec-inner" style="text-align:center">
+    <div class="sec-label">تابعيني</div>
+    <h2 class="sec-title">مجتمع <em>Nice Nails</em></h2>
+    <div class="social-cards">
+      <a href="https://www.instagram.com/nail_artist.asma/" target="_blank" rel="noopener" class="social-card">
+        <div class="social-icon">📸</div>
+        <div class="social-handle">@nail_artist.asma</div>
+        <div class="social-stat">انستقرام · +٤٠٠٠ متابع</div>
+      </a>
+      <a href="https://www.tiktok.com/@nail_artist.asma" target="_blank" rel="noopener" class="social-card">
+        <div class="social-icon">🎵</div>
+        <div class="social-handle">@nail_artist.asma</div>
+        <div class="social-stat">تيك توك · +٧٩٠٠٠ متابع</div>
+      </a>
+            <a href="https://www.snapchat.com/add/Asma.NiceNails" target="_blank" rel="noopener" class="social-card">
+        <div class="social-icon">👻</div>
+        <div class="social-handle">Asma.NiceNails</div>
+        <div class="social-stat">سناب شات</div>
+      </a>
+      <a href="https://wa.me/966556110963" target="_blank" rel="noopener" class="social-card">
+        <div class="social-icon">💬</div>
+        <div class="social-handle">واتساب</div>
+        <div class="social-stat">للاستفسارات والأسئلة</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-sec reveal" id="gallery">
+  <div class="sec-inner">
+    <div class="gallery-intro">
+      <div class="sec-label">معرض الأعمال</div>
+      <h2 class="sec-title">أعمال <em>Nice Nails</em></h2>
+      <p class="sec-sub">كل لوحة فن بحد ذاتها — شوفي بعض اللي خرجت من أيدي أسماء وطالباتها 💅</p>
+    </div>
+    <div class="gallery-grid" id="gallery-grid">
+
+      <!-- الصورة الرئيسية — ضعي هنا صورة أعمالك الأبرز -->
+      <div class="g-item big" onclick="openLb(this)">
+        <div class="g-placeholder"><span>📸</span><p>أضيفي صورتك الرئيسية</p></div>
+        <div class="g-overlay"><span class="g-tag">جل اكستنشن</span></div>
+      </div>
+
+      <!-- صورة ٢ -->
+      <div class="g-item" onclick="openLb(this)">
+        <div class="g-placeholder"><span>💅</span><p>صورة عمل</p></div>
+        <div class="g-overlay"><span class="g-tag">تصميم كلاسيكي</span></div>
+      </div>
+
+      <!-- صورة ٣ -->
+      <div class="g-item" onclick="openLb(this)">
+        <div class="g-placeholder"><span>✨</span><p>صورة عمل</p></div>
+        <div class="g-overlay"><span class="g-tag">جل فرنش</span></div>
+      </div>
+
+      <!-- صورة ٤ -->
+      <div class="g-item" onclick="openLb(this)">
+        <div class="g-placeholder"><span>🌸</span><p>صورة عمل</p></div>
+        <div class="g-overlay"><span class="g-tag">نقش يدوي</span></div>
+      </div>
+
+      <!-- صورة ٥ -->
+      <div class="g-item" onclick="openLb(this)">
+        <div class="g-placeholder"><span>💎</span><p>صورة عمل</p></div>
+        <div class="g-overlay"><span class="g-tag">كريستال</span></div>
+      </div>
+
+      <!-- صورة ٦ -->
+      <div class="g-item" onclick="openLb(this)">
+        <div class="g-placeholder"><span>🎨</span><p>صورة عمل</p></div>
+        <div class="g-overlay"><span class="g-tag">ومبرة</span></div>
+      </div>
+
+    </div>
+    <div class="gallery-cta-row">
+      <a href="https://www.instagram.com/nail_artist.asma/" target="_blank" rel="noopener">📸 شوفي المزيد على انستقرام</a>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLb()">
+  <button class="lb-close" onclick="closeLb()">✕</button>
+  <img id="lb-img" src="" alt="عمل فني">
+</div>
+
+<footer>
+  <strong>Nice Nails by Asma</strong>
+  <div style="margin-top:.4rem">أخصائية أظافر ومدربة معتمدة — الدمام، المنطقة الشرقية</div>
+  <div style="margin-top:.3rem;font-size:.7rem;opacity:.45">شهادة معتمدة من الأكاديمية البريطانية للتدريب والتطوير</div>
+</footer>
+
+<!-- WhatsApp Float -->
+<a href="https://wa.me/966556110963?text=مرحبا أسماء، عندي استفسار عن دورة جل اكستنشن 💅" target="_blank" class="wa-float" title="تواصلي عبر واتساب">💬</a>
+
+<script>
+// ── Reveal on scroll
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(e=>obs.observe(e));
+
+// ── Toggle commercial fields
+function toggleCommercial(v){
+  const sec=document.getElementById('commercial-section');
+  sec.classList.toggle('show', v==='commercial');
+}
+
+// ── Registration storage key
+const STORAGE_KEY='nn_regs_v2';
+function loadRegs(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return []; } }
+function saveRegs(d){ localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); }
+
+// ── Submit form
+function submitForm(){
+  const name   = document.getElementById('f-name').value.trim();
+  const phone  = document.getElementById('f-phone').value.trim();
+  const city   = document.getElementById('f-city').value;
+  const entity = document.getElementById('f-entity').value;
+
+  if(!name)  { alert('يرجى إدخال الاسم الكامل'); return; }
+  if(!phone) { alert('يرجى إدخال رقم الجوال');   return; }
+  if(!city)  { alert('يرجى اختيار المدينة');      return; }
+  if(!entity){ alert('يرجى اختيار نوع الكيان');   return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  document.getElementById('btn-text').textContent = 'جاري الإرسال...';
+
+  const payload = {
+    name,
+    phone,
+    city,
+    entity : entity === 'commercial' ? 'تجاري' : 'شخصي',
+    biz    : document.getElementById('f-biz').value.trim()  || '',
+    count  : document.getElementById('f-count').value       || '',
+    interest: document.getElementById('f-interest').value   || '',
+    source : document.getElementById('f-src').value         || '',
+    notes  : document.getElementById('f-notes').value.trim()|| '',
+  };
+
+  // ── إرسال البيانات إلى submit.php
+  fetch('submit.php', {
+    method : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.success) throw new Error(res.message || 'خطأ غير معروف');
+
+    // إخفاء الفورم وإظهار رسالة النجاح فقط
+    document.getElementById('reg-form-wrap').style.display = 'none';
+    const box = document.getElementById('success-box');
+    box.classList.add('show');
+    box.scrollIntoView({ behavior:'smooth', block:'center' });
+  })
+  .catch(err => {
+    btn.disabled = false;
+    document.getElementById('btn-text').textContent = 'إرسال طلب التسجيل ←';
+    alert('حدث خطأ أثناء الإرسال: ' + err.message + '\nيرجى المحاولة مرة أخرى.');
+  });
+}
+
+// ── Gallery Lightbox
+function openLb(el){
+  const img = el.querySelector('img');
+  if(!img) return; // placeholder — no image yet
+  document.getElementById('lb-img').src = img.src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLb(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLb(); });
+</script>
+</body>
+</html>

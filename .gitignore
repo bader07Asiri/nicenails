@@ -1,0 +1,4 @@
+*.lock
+system/data/wa_log.txt
+system/data/*.lock
+.DS_Store

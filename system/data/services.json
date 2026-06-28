@@ -1,0 +1,8 @@
+[
+  { "id": "svc_buildnew", "name": "بناء جل جديد", "duration": "2-3 ساعات", "price": 450, "payment_type": "deposit", "deposit": 200, "active": true, "order": 1 },
+  { "id": "svc_refill", "name": "ريفيل / تجديد", "duration": "1.5-2 ساعة", "price": 350, "payment_type": "deposit", "deposit": 200, "active": true, "order": 2 },
+  { "id": "svc_filler", "name": "تعديل (فيلر)", "duration": "1-1.5 ساعة", "price": 150, "payment_type": "full", "deposit": 0, "active": true, "order": 3 },
+  { "id": "svc_removal", "name": "إزالة", "duration": "45 دقيقة", "price": 180, "payment_type": "full", "deposit": 0, "active": true, "order": 4 },
+  { "id": "svc_nailart", "name": "نيل آرت (تصميم)", "duration": "حسب التصميم", "price": 200, "payment_type": "full", "deposit": 0, "active": true, "order": 5 },
+  { "id": "svc_removal_build", "name": "إزالة + بناء جديد", "duration": "3-4 ساعات", "price": 550, "payment_type": "deposit", "deposit": 200, "active": true, "order": 6 }
+]
