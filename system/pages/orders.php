@@ -44,6 +44,7 @@ function pay_link($settings,$order,$amount){
           <b style="font-size:1.05rem"><?= h($o['customer_name']) ?></b>
           <span class="tag t-<?= h($o['status']) ?>"><?= $stm[$o['status']]??$o['status'] ?></span>
           <?php if($isFree): ?><span class="tag t-visitor">مجاني</span><?php endif; ?>
+          <?php if(!empty($o['refunded'])): ?><span class="tag t-cancelled">↩️ مُرتجع <?= money($o['refund_amount']??0) ?> ﷼</span><?php endif; ?>
         </div>
         <div class="muted" style="margin-top:3px"><?= h($o['service_name']) ?><?= $o['phone']?' • '.h($o['phone']):'' ?><?= $o['appt_date']?' • '.ar_date($o['appt_date']).' '.h($o['appt_time']):'' ?></div>
         <?php if($o['design_details']): ?><div class="muted" style="margin-top:3px">🎨 <?= h($o['design_details']) ?></div><?php endif; ?>
@@ -85,11 +86,16 @@ function pay_link($settings,$order,$amount){
           <span class="tag t-completed">✅ مدفوع بالكامل</span>
       <?php endif; endif; ?>
 
-      <?php if(($o['status']??'')!=='cancelled' && ($o['status']??'')!=='completed'): ?>
+      <?php $paidAmt=(float)($o['paid']??0); $st0=($o['status']??''); ?>
+      <?php if($st0!=='cancelled' && $st0!=='completed'): ?>
         <button class="btn btn-sm btn-ghost" onclick="editOrder('<?= $o['id'] ?>',<?= (float)$o['total'] ?>,<?= htmlspecialchars(json_encode($o['design_details']),ENT_QUOTES) ?>,<?= htmlspecialchars(json_encode($o['notes']),ENT_QUOTES) ?>)">تعديل</button>
+      <?php endif; ?>
+      <?php if($st0!=='cancelled' && $paidAmt>0 && empty($o['refunded'])): ?>
+        <a class="btn btn-sm btn-danger" href="actions.php?do=order_refund&id=<?= $o['id'] ?>&return=<?= urlencode("index.php?page=orders&filter=$filter") ?>" onclick="return confirm('إرجاع المبلغ المدفوع (<?= money($paidAmt) ?> ﷼) وإلغاء الطلب؟ سيخرج من الإيرادات.')">↩️ مرتجع وإلغاء</a>
+      <?php elseif($st0!=='cancelled' && $st0!=='completed'): ?>
         <a class="btn btn-sm btn-danger" href="actions.php?do=order_status&id=<?= $o['id'] ?>&status=cancelled&return=<?= urlencode("index.php?page=orders&filter=$filter") ?>" onclick="return confirm('إلغاء الطلب؟')">إلغاء</a>
       <?php endif; ?>
-      <a class="btn btn-sm btn-danger" href="actions.php?do=order_delete&id=<?= $o['id'] ?>&return=<?= urlencode("index.php?page=orders&filter=$filter") ?>" onclick="return confirmDel()">حذف</a>
+      <a class="btn btn-sm btn-ghost" href="actions.php?do=order_delete&id=<?= $o['id'] ?>&return=<?= urlencode("index.php?page=orders&filter=$filter") ?>" onclick="return confirmDel()">حذف</a>
     </div>
   </div>
 <?php endforeach; ?>

@@ -137,3 +137,90 @@ function customer_upsert($phone, $name = '', $status = '') {
 }
 
 require_once __DIR__ . "/comm.php";
+
+// ═══════════════════════════════════════════════════════════
+//  سلة المهملات (Soft Delete / Recycle Bin)
+//  أي عنصر يُحذف يُنقل إلى trash.json ويختفي من كل الصفحات،
+//  ويمكن استرجاعه. تفريغ السلة = حذف نهائي لا رجعة فيه.
+// ═══════════════════════════════════════════════════════════
+function trash_label($type, $r){
+    switch($type){
+        case 'orders':       return 'طلب — '.($r['customer_name']??'').' · '.($r['service_name']??'');
+        case 'customers':    return 'عميلة — '.($r['name']??'').' · '.($r['phone']??'');
+        case 'services':     return 'خدمة — '.($r['name']??'');
+        case 'appointments': return 'موعد — '.($r['customer_name']??'').' · '.($r['date']??'').' '.($r['time']??'');
+        case 'courses':      return 'متدربة — '.($r['name']??'');
+        case 'payments':     return 'دفعة — '.($r['customer_name']??'').' · '.money($r['amount']??0).' ﷼';
+    }
+    return $type;
+}
+
+// نقل عنصر (وما يرتبط به) إلى سلة المهملات
+function soft_delete($type, $id){
+    $list = db_load($type);
+    $rec = null;
+    foreach($list as $r){ if(($r['id']??null)===$id){ $rec=$r; break; } }
+    if(!$rec) return false;
+
+    // إزالة العنصر من مخزنه الأصلي
+    $list = array_values(array_filter($list, fn($r)=>($r['id']??null)!==$id));
+    db_save($type, $list);
+
+    $related = [];
+    // تتالي: المدفوعات المرتبطة (للطلبات والدورات) — تُزال من القوائم المالية أيضاً
+    if($type==='orders' || $type==='courses'){
+        $pays = db_load('payments'); $keep=[];
+        foreach($pays as $p){
+            if(($p['order_id']??'')===$id) $related[] = ['type'=>'payments','data'=>$p];
+            else $keep[]=$p;
+        }
+        if(count($keep)!==count($pays)) db_save('payments',$keep);
+    }
+    // تتالي: المواعيد المرتبطة بالطلب
+    if($type==='orders'){
+        $appts = db_load('appointments'); $keep=[];
+        foreach($appts as $a){
+            if(($a['order_id']??'')===$id) $related[] = ['type'=>'appointments','data'=>$a];
+            else $keep[]=$a;
+        }
+        if(count($keep)!==count($appts)) db_save('appointments',$keep);
+    }
+
+    $trash = db_load('trash');
+    $trash[] = [
+        'id'         => gen_id('trash'),
+        'type'       => $type,
+        'label'      => trash_label($type,$rec),
+        'deleted_at' => now_str(),
+        'data'       => $rec,
+        'related'    => $related,
+    ];
+    db_save('trash', $trash);
+    return true;
+}
+
+// استرجاع عنصر من السلة إلى مكانه الأصلي (مع ما يرتبط به)
+function trash_restore($trashId){
+    $trash = db_load('trash');
+    $entry = null;
+    foreach($trash as $t){ if(($t['id']??null)===$trashId){ $entry=$t; break; } }
+    if(!$entry) return false;
+
+    $list = db_load($entry['type']); $list[] = $entry['data']; db_save($entry['type'], $list);
+    foreach(($entry['related']??[]) as $rel){
+        $rl = db_load($rel['type']); $rl[] = $rel['data']; db_save($rel['type'], $rl);
+    }
+    $trash = array_values(array_filter($trash, fn($t)=>($t['id']??null)!==$trashId));
+    db_save('trash', $trash);
+    return true;
+}
+
+// حذف نهائي لعنصر واحد من السلة
+function trash_purge($trashId){
+    $trash = db_load('trash');
+    $trash = array_values(array_filter($trash, fn($t)=>($t['id']??null)!==$trashId));
+    db_save('trash', $trash);
+}
+
+// تفريغ السلة بالكامل — حذف نهائي لا رجعة فيه
+function trash_empty(){ db_save('trash', []); }

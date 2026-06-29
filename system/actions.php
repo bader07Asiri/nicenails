@@ -125,16 +125,78 @@ case 'order_pay_remaining': {
 
 case 'order_status': {
     $id = $_GET['id']; $st = $_GET['status'] ?? 'pending';
+    if ($st==='cancelled') {
+        $o = rec_find(db_load('orders'), $id);
+        // إلغاء طلب فيه مبلغ مدفوع = إرجاع المبلغ تلقائياً (يخرج من الإيرادات)
+        if ($o && (float)($o['paid']??0) > 0 && empty($o['refunded'])) {
+            record_refund($o, (float)$o['paid']);
+            rec_update('orders', $id, ['refunded'=>true,'refund_amount'=>(float)$o['paid'],'refunded_at'=>now_str()]);
+        }
+        cancel_linked_appt($id);
+    }
     rec_update('orders', $id, ['status'=>$st]);
-    if ($st==='cancelled') cancel_linked_appt($id);
-    flash('ok', 'تم تحديث حالة الطلب');
+    flash('ok', $st==='cancelled' ? 'تم إلغاء الطلب' : 'تم تحديث حالة الطلب');
     back('orders');
 }
 
 case 'order_delete': {
-    rec_delete('orders', $_GET['id']);
-    flash('ok', 'تم حذف الطلب');
+    $id = $_GET['id'];
+    $o  = rec_find(db_load('orders'), $id);
+    // حارس المبلغ: لا يُحذف طلب فيه فلوس مدفوعة حتى يتضح وضع المبلغ (مرتجع)
+    if ($o && (float)($o['paid']??0) > 0 && empty($o['refunded'])) {
+        flash('err', 'لا يمكن حذف الطلب — يوجد مبلغ مدفوع ('.money($o['paid']).' ﷼). نفّذي «مرتجع وإلغاء» أولاً لإرجاع المبلغ، ثم احذفي.');
+        back('orders');
+    }
+    soft_delete('orders', $id);
+    flash('ok', 'تم نقل الطلب إلى سلة المهملات');
     back('orders');
+}
+
+// مرتجع: إرجاع المبلغ المدفوع وإلغاء الطلب (يخرج من الإيرادات، يصير ضمن الملغاة)
+case 'order_refund': {
+    $id = $_GET['id'] ?? p('id');
+    $o  = rec_find(db_load('orders'), $id);
+    if ($o) {
+        $paid = (float)($o['paid'] ?? 0);
+        if ($paid > 0 && empty($o['refunded'])) record_refund($o, $paid);
+        rec_update('orders', $id, ['status'=>'cancelled','refunded'=>true,'refund_amount'=>$paid,'refunded_at'=>now_str()]);
+        cancel_linked_appt($id);
+        flash('ok', 'تم إرجاع المبلغ ('.money($paid).' ﷼) وإلغاء الطلب');
+    }
+    back('orders');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  سلة المهملات
+// ─────────────────────────────────────────────────────────────
+case 'trash_restore': {
+    trash_restore($_GET['id'] ?? p('id'));
+    flash('ok', 'تمت استعادة العنصر إلى مكانه');
+    back('trash');
+}
+case 'trash_purge': {
+    trash_purge($_GET['id'] ?? p('id'));
+    flash('ok', 'تم حذف العنصر نهائياً');
+    back('trash');
+}
+case 'trash_empty': {
+    trash_empty();
+    flash('ok', 'تم تفريغ سلة المهملات نهائياً');
+    back('trash');
+}
+
+// تنظيف لمرة واحدة: مدفوعات قديمة لطلبات/دورات محذوفة سابقاً (تبقى عالقة في القوائم المالية)
+case 'payments_cleanup': {
+    $orderIds = array_column(db_load('orders'), 'id');
+    $courseIds = array_column(db_load('courses'), 'id');
+    $valid = array_merge($orderIds, $courseIds);
+    $n = 0;
+    foreach (db_load('payments') as $pp) {
+        $oid = $pp['order_id'] ?? '';
+        if ($oid !== '' && !in_array($oid, $valid, true)) { soft_delete('payments', $pp['id']); $n++; }
+    }
+    flash($n ? 'ok' : 'err', $n ? "تم نقل $n عملية دفع يتيمة (بلا طلب) إلى سلة المهملات — القوائم المالية صارت سليمة." : 'لا توجد مدفوعات يتيمة — القوائم سليمة.');
+    back('finance');
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -162,8 +224,8 @@ case 'appt_status': {
     back('appointments');
 }
 case 'appt_delete': {
-    rec_delete('appointments', $_GET['id']);
-    flash('ok', 'تم حذف الموعد');
+    soft_delete('appointments', $_GET['id']);
+    flash('ok', 'تم نقل الموعد إلى سلة المهملات');
     back('appointments');
 }
 
@@ -185,8 +247,8 @@ case 'customer_update': {
     back('customers');
 }
 case 'customer_delete': {
-    rec_delete('customers', $_GET['id']);
-    flash('ok', 'تم حذف العميلة');
+    soft_delete('customers', $_GET['id']);
+    flash('ok', 'تم نقل العميلة إلى سلة المهملات');
     back('customers');
 }
 case 'broadcast_send': {
@@ -231,8 +293,8 @@ case 'service_save': {
     back('services');
 }
 case 'service_delete': {
-    rec_delete('services', $_GET['id']);
-    flash('ok', 'تم حذف الخدمة');
+    soft_delete('services', $_GET['id']);
+    flash('ok', 'تم نقل الخدمة إلى سلة المهملات');
     back('services');
 }
 
@@ -275,8 +337,8 @@ case 'course_update': {
     back('courses');
 }
 case 'course_delete': {
-    rec_delete('courses', $_GET['id']);
-    flash('ok','تم حذف المتدربة');
+    soft_delete('courses', $_GET['id']);
+    flash('ok','تم نقل المتدربة إلى سلة المهملات');
     back('courses');
 }
 
@@ -322,12 +384,34 @@ case 'bot_save': {
 case 'wa_reply': {
     $phone = normalize_phone(p('phone'));
     $text  = trim((string)p('text'));
-    if ($phone && $text !== '') {
+    if ($phone) {
         conv_set_mode($phone, 'human');   // الرد اليدوي يوقف البوت لهالمحادثة
-        wa_send_message($phone, $text, true, 'human');
+        if (!empty($_FILES['image']) && ($_FILES['image']['error'] ?? 1) === UPLOAD_ERR_OK) {
+            $tmp = $_FILES['image']['tmp_name'];
+            $mime = mime_content_type($tmp) ?: 'image/jpeg';
+            if (strpos($mime, 'image/') === 0) {
+                $ext = mime_ext($mime);
+                $fname = gen_id('out') . '.' . $ext;
+                @move_uploaded_file($tmp, media_dir() . '/' . $fname);
+                $mid = wa_upload_media(media_dir() . '/' . $fname, $mime);
+                if ($mid) wa_send_image($phone, $mid, $text);
+                msg_add($phone, '', 'out', $text, 'human', ['type'=>'image','file'=>$fname,'mime'=>$mime]);
+            }
+        } elseif ($text !== '') {
+            wa_send_message($phone, $text, true, 'human');
+        }
         conv_mark_read($phone);
     }
     back('inbox');
+}
+case 'import_whatsapp': {
+    if (empty($_FILES['chatfile']) || ($_FILES['chatfile']['error'] ?? 1) !== UPLOAD_ERR_OK) {
+        flash('err', 'لم يتم رفع ملف'); back('import');
+    }
+    $raw = file_get_contents($_FILES['chatfile']['tmp_name']);
+    $added = whatsapp_import($raw);
+    flash('ok', 'تم استيراد '.$added.' رسالة بنجاح');
+    back('import');
 }
 case 'wa_set_mode': {
     $phone = normalize_phone($_GET['phone'] ?? p('phone'));
@@ -362,6 +446,59 @@ default:
 }
 
 // ── دوال مساعدة للعمليات ───────────────────────────────────
+
+// ── استيراد محادثات واتساب (JSON من WhatsApp-Chat-Exporter أو txt) ──
+function whatsapp_import($raw) {
+    $raw = trim($raw);
+    $msgs = db_load('messages');
+    $before = count($msgs);
+    $j = json_decode($raw, true);
+    if (is_array($j)) {
+        // صيغة JSON: مفاتيح = jid، كل واحد فيه name + messages
+        foreach ($j as $jid => $chat) {
+            if (!is_array($chat)) continue;
+            $phone = normalize_phone(preg_replace('/[^0-9].*$/', '', (string)$jid));
+            if (!$phone) continue;
+            $name = $chat['name'] ?? '';
+            customer_upsert($phone, $name, 'client');
+            $list = $chat['messages'] ?? $chat;
+            if (!is_array($list)) continue;
+            foreach ($list as $m) {
+                if (!is_array($m)) continue;
+                $text = $m['data'] ?? ($m['text'] ?? ($m['caption'] ?? ''));
+                $hasMedia = !empty($m['media']);
+                if ($text === '' && !$hasMedia) continue;
+                $dir = !empty($m['from_me']) ? 'out' : 'in';
+                $ts = isset($m['timestamp']) && $m['timestamp']
+                      ? date('Y-m-d H:i:s', (int)$m['timestamp'])
+                      : (($m['date'] ?? date('Y-m-d')).' '.($m['time'] ?? '00:00').':00');
+                $msgs[] = [
+                    'id'=>gen_id('imp'), 'phone'=>$phone, 'name'=>clean($name),
+                    'dir'=>$dir, 'text'=>($hasMedia && $text==='' ? '[وسائط]' : (string)$text),
+                    'via'=>'import', 'ts'=>$ts, 'read'=>true,
+                ];
+            }
+        }
+    } else {
+        // صيغة txt: لا نعرف الرقم — نطلب من المستخدم رفع JSON بدلاً
+        return 0;
+    }
+    // رتّب زمنياً
+    usort($msgs, fn($a,$b)=>strcmp($a['ts']??'', $b['ts']??''));
+    db_save('messages', $msgs);
+    return count($msgs) - $before;
+}
+
+function record_refund($o, $amount){
+    if ($amount <= 0) return;
+    $p = db_load('payments');
+    $p[] = [
+        'id'=>gen_id('pay'), 'date'=>now_str(), 'order_id'=>$o['id'] ?? '',
+        'customer_name'=>$o['customer_name'] ?? '', 'phone'=>$o['phone'] ?? '',
+        'service_name'=>$o['service_name'] ?? '', 'type'=>'refund', 'amount'=> -1 * (float)$amount,
+    ];
+    db_save('payments', $p);
+}
 function record_payment($o, $type, $amount){
     if ($amount <= 0) return;
     $p = db_load('payments');

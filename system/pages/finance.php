@@ -45,6 +45,8 @@ $diff=$revMonth-$revLastMonth; $diffPct=$revLastMonth>0?round($diff/$revLastMont
 <div class="toolbar">
   <a class="btn btn-primary" href="export.php?type=payments">⬇️ تصدير كشف مالي (Excel)</a>
   <a class="btn btn-ghost" href="export.php?type=orders">⬇️ تصدير الطلبات</a>
+  <a class="btn btn-ghost" href="actions.php?do=payments_cleanup&return=<?= urlencode('index.php?page=finance') ?>"
+     onclick="return confirm('تنظيف المدفوعات التي تخص طلبات محذوفة سابقاً ونقلها لسلة المهملات؟')">🧹 تنظيف مدفوعات بلا طلب</a>
 </div>
 
 <div class="grid g4" style="margin-bottom:1.4rem">
@@ -113,12 +115,13 @@ $diff=$revMonth-$revLastMonth; $diffPct=$revLastMonth>0?round($diff/$revLastMont
   <div class="card-h"><h3>سجل المدفوعات</h3><span class="muted"><?= count($payments) ?> عملية</span></div>
   <?php if(!$payments): ?><div class="empty"><div class="ei">📈</div>لا توجد مدفوعات مسجّلة بعد</div>
   <?php else:
-    $tmap=['deposit'=>'عربون','remaining'=>'باقي','full'=>'كامل','course'=>'دورة'];
+    $tmap=['deposit'=>'عربون','remaining'=>'باقي','full'=>'كامل','course'=>'دورة','refund'=>'مرتجع ↩️'];
   ?>
     <div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>العميلة</th><th>الخدمة</th><th>النوع</th><th>المبلغ</th></tr></thead><tbody>
     <?php foreach(array_slice(array_reverse($payments),0,30) as $p): ?>
+      <?php $isRef=($p['type']??'')==='refund'; ?>
       <tr><td><?= h(substr($p['date'],0,16)) ?></td><td><b><?= h($p['customer_name']) ?></b></td><td><?= h($p['service_name']) ?></td>
-      <td><span class="tag t-confirmed"><?= $tmap[$p['type']]??$p['type'] ?></span></td><td><b><?= money($p['amount']) ?> ﷼</b></td></tr>
+      <td><span class="tag <?= $isRef?'t-cancelled':'t-confirmed' ?>"><?= $tmap[$p['type']]??$p['type'] ?></span></td><td><b style="color:<?= $isRef?'var(--red)':'inherit' ?>"><?= money($p['amount']) ?> ﷼</b></td></tr>
     <?php endforeach; ?>
     </tbody></table></div>
   <?php endif; ?>

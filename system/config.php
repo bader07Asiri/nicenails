@@ -28,4 +28,5 @@ $GLOBALS['DATA_FILES'] = [
     'payments'     => DATA_DIR . '/payments.json',
     'broadcasts'   => DATA_DIR . '/broadcasts.json',
     'settings'     => DATA_DIR . '/settings.json',
+    'trash'        => DATA_DIR . '/trash.json',
 ];

@@ -35,30 +35,41 @@ try {
             $contacts = $value['contacts'] ?? [];
             $profileName = $contacts[0]['profile']['name'] ?? '';
             foreach (($value['messages'] ?? []) as $msg) {
-                if (($msg['type'] ?? '') !== 'text') continue;
+                $type = $msg['type'] ?? '';
                 $from = normalize_phone($msg['from'] ?? '');
-                $body = $msg['text']['body'] ?? '';
-
-                // أرشفة الرقم + تخزين الرسالة الواردة
+                if (!$from) continue;
                 $cust = customer_upsert($from, $profileName, '');
                 $name = $profileName ?: ($cust['name'] ?? '');
-                msg_add($from, $name, 'in', $body, 'customer');
+                $link = rtrim($settings['site_url']??'','/').'/system/index.php?page=inbox&phone='.$from;
+
+                // تخزين الرسالة الواردة حسب نوعها
+                if ($type === 'text') {
+                    $body = $msg['text']['body'] ?? '';
+                    msg_add($from, $name, 'in', $body, 'customer');
+                } elseif (in_array($type, ['image','audio','video','document','sticker'])) {
+                    $mObj = $msg[$type] ?? [];
+                    $caption = $mObj['caption'] ?? '';
+                    $mid = $mObj['id'] ?? '';
+                    $dl = $mid ? wa_download_media($mid, $type) : null;
+                    msg_add($from, $name, 'in', $caption, 'customer', $dl);
+                    $body = $caption ?: ('['.$type.']');
+                } else {
+                    $body = '['.$type.']';
+                    msg_add($from, $name, 'in', $body, 'customer');
+                }
 
                 // إشعار للأخصائية بكل رسالة واردة
-                notify_specialist('رسالة واتساب جديدة', ($name?:$from).': '.mb_substr($body,0,80),
-                    rtrim($settings['site_url']??'','/').'/system/index.php?page=inbox&phone='.$from, 'message');
+                notify_specialist('رسالة واتساب جديدة', ($name?:$from).': '.mb_substr($body,0,80), $link, 'message');
 
-                // الوضع: إذا يدوي → لا يرد البوت (الأخصائية تتكفّل من الـ Inbox)
+                // الوضع اليدوي → لا يرد البوت
                 if (conv_get_mode($from) === 'human') continue;
+                // البوت يرد على النص فقط
+                if ($type !== 'text') continue;
 
-                // وضع البوت: ولّد الرد وأرسله
                 $reply = bot_reply($from, $body, $settings);
-
-                // إذا اختار التواصل مع الأخصائية → حوّل للوضع اليدوي
                 if (!empty($GLOBALS['bot_handoff'])) {
                     conv_set_mode($from, 'human');
-                    notify_specialist('عميلة تطلب التواصل', ($name?:$from).' تنتظر ردّك',
-                        rtrim($settings['site_url']??'','/').'/system/index.php?page=inbox&phone='.$from, 'message');
+                    notify_specialist('عميلة تطلب التواصل', ($name?:$from).' تنتظر ردّك', $link, 'message');
                 }
                 if ($reply !== null && $reply !== '') {
                     wa_send_message($from, $reply, true, 'bot');

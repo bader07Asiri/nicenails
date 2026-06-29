@@ -11,10 +11,10 @@ if (!defined('VAPID_PRIV_B64')) define('VAPID_PRIV_B64','LS0tLS1CRUdJTiBFQyBQUkl
 function vapid_public(){ $s=settings_get(); return $s['webpush']['public_key'] ?? VAPID_PUBLIC; }
 
 // ── تخزين الرسائل (data/messages.json) ─────────────────────
-function msg_add($phone, $name, $dir, $text, $via='') {
+function msg_add($phone, $name, $dir, $text, $via='', $media=null) {
     $phone = normalize_phone($phone);
     $all = db_load('messages');
-    $all[] = [
+    $rec = [
         'id'    => gen_id('msg'),
         'phone' => $phone,
         'name'  => clean($name),
@@ -24,6 +24,12 @@ function msg_add($phone, $name, $dir, $text, $via='') {
         'ts'    => now_str(),
         'read'  => ($dir === 'out'),     // الصادر يُعتبر مقروء
     ];
+    if ($media && !empty($media['file'])) {
+        $rec['media_type'] = $media['type'] ?? 'image';   // image | audio | video | document | sticker
+        $rec['media_file'] = $media['file'];              // اسم الملف داخل data/media
+        $rec['media_mime'] = $media['mime'] ?? '';
+    }
+    $all[] = $rec;
     db_save('messages', $all);
     return end($all);
 }
@@ -217,4 +223,77 @@ function der_to_raw_sig($der) {
     $r = str_pad($r, 32, "\x00", STR_PAD_LEFT);
     $s = str_pad($s, 32, "\x00", STR_PAD_LEFT);
     return $r.$s;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  وسائط الواتساب (صور/ملفات) عبر Cloud API
+// ═══════════════════════════════════════════════════════════
+function media_dir() {
+    $d = DATA_DIR . '/media';
+    if (!is_dir($d)) @mkdir($d, 0775, true);
+    return $d;
+}
+
+// رفع ملف وسائط إلى واتساب → يرجّع media id (للإرسال بدون رابط عام)
+function wa_upload_media($filepath, $mime) {
+    $s = settings_get(); $wa = $s['whatsapp'] ?? [];
+    if (empty($wa['enabled']) || empty($wa['access_token']) || empty($wa['phone_number_id'])) return null;
+    $url = "https://graph.facebook.com/v20.0/{$wa['phone_number_id']}/media";
+    $post = [
+        'messaging_product' => 'whatsapp',
+        'type'              => $mime,
+        'file'             => new CURLFile($filepath, $mime, basename($filepath)),
+    ];
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST=>true, CURLOPT_RETURNTRANSFER=>true,
+        CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$wa['access_token']],
+        CURLOPT_POSTFIELDS=>$post, CURLOPT_TIMEOUT=>30,
+    ]);
+    $res = curl_exec($ch); curl_close($ch);
+    $j = json_decode($res, true);
+    return $j['id'] ?? null;
+}
+
+// إرسال صورة (بالـ media id) مع تعليق اختياري
+function wa_send_image($to, $mediaId, $caption='') {
+    $s = settings_get(); $wa = $s['whatsapp'] ?? [];
+    if (empty($wa['enabled'])) return ['disabled'=>true];
+    $url = "https://graph.facebook.com/v20.0/{$wa['phone_number_id']}/messages";
+    $img = ['id'=>$mediaId];
+    if ($caption !== '') $img['caption'] = $caption;
+    $payload = ['messaging_product'=>'whatsapp','to'=>normalize_phone($to),'type'=>'image','image'=>$img];
+    $res = http_post_json($url, $payload, ['Authorization: Bearer '.$wa['access_token']]);
+    @file_put_contents(DATA_DIR.'/wa_log.txt', now_str()." OUT-IMG to $to | $res\n", FILE_APPEND);
+    return ['sent'=>true,'resp'=>$res];
+}
+
+// تنزيل وسائط واردة → يحفظها في data/media ويرجّع [file, mime, type]
+function wa_download_media($mediaId, $typeHint='image') {
+    $s = settings_get(); $wa = $s['whatsapp'] ?? [];
+    if (empty($wa['access_token'])) return null;
+    // 1) جلب رابط الوسائط
+    $info = curl_get("https://graph.facebook.com/v20.0/{$mediaId}", ['Authorization: Bearer '.$wa['access_token']]);
+    $j = json_decode($info, true);
+    $murl = $j['url'] ?? ''; $mime = $j['mime_type'] ?? '';
+    if (!$murl) return null;
+    // 2) تنزيل البايتات (يتطلب التوكن)
+    $bytes = curl_get($murl, ['Authorization: Bearer '.$wa['access_token']]);
+    if ($bytes === false || $bytes === '') return null;
+    $ext = mime_ext($mime);
+    $fname = gen_id('wam') . '.' . $ext;
+    file_put_contents(media_dir().'/'.$fname, $bytes);
+    return ['file'=>$fname, 'mime'=>$mime, 'type'=>$typeHint];
+}
+
+function curl_get($url, $headers=[], $timeout=30) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_HTTPHEADER=>$headers, CURLOPT_TIMEOUT=>$timeout, CURLOPT_FOLLOWLOCATION=>true]);
+    $r = curl_exec($ch); curl_close($ch); return $r;
+}
+function mime_ext($mime) {
+    $map = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','image/gif'=>'gif',
+            'audio/ogg'=>'ogg','audio/mpeg'=>'mp3','audio/mp4'=>'m4a','audio/amr'=>'amr',
+            'video/mp4'=>'mp4','application/pdf'=>'pdf'];
+    return $map[$mime] ?? 'bin';
 }

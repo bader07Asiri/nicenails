@@ -46,6 +46,8 @@ $pages = [
     'courses'      => ['ic'=>'🎓','t'=>'الدورات',         's'=>'دورة جل اكستنشن'],
     'finance'      => ['ic'=>'📈','t'=>'القوائم المالية',  's'=>'التقارير والإيرادات'],
     'settings'     => ['ic'=>'⚙️','t'=>'الإعدادات',        's'=>'الواتساب والشروط والبوت'],
+    'import'       => ['ic'=>'📥','t'=>'استيراد',          's'=>'استيراد محادثات واتساب'],
+    'trash'        => ['ic'=>'🗑️','t'=>'سلة المهملات','s'=>'العناصر المحذوفة — استرجاع أو حذف نهائي'],
 ];
 $page = $_GET['page'] ?? 'dashboard';
 if (!isset($pages[$page])) $page = 'dashboard';
@@ -102,3 +104,41 @@ $badges = ['orders'=>$pendingOrders ?: '', 'appointments'=>$todayAppts ?: '', 'i
     </div>
     <div class="content">
       <?php
+        $flash = $_SESSION['flash'] ?? null; unset($_SESSION['flash']);
+        if ($flash): ?><div class="flash <?= h($flash['type']) ?>"><?= $flash['type']==='ok'?'✅':'⚠️' ?> <?= h($flash['msg']) ?></div><?php endif;
+        $pageFile = __DIR__ . "/pages/$page.php";
+        if (file_exists($pageFile)) include $pageFile; else echo '<div class="empty">الصفحة غير موجودة</div>';
+      ?>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(e){console.log('SW',e);}); }
+function urlB64ToUint8(b64){var p='='.repeat((4-b64.length%4)%4);var s=(b64+p).replace(/-/g,'+').replace(/_/g,'/');var raw=atob(s);var arr=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;}
+async function enablePush(){
+  try{
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)){alert('جهازك لا يدعم الإشعارات. على آيفون: ثبّتي التطبيق على الشاشة الرئيسية أولاً (iOS 16.4+).');return;}
+    var perm=await Notification.requestPermission();
+    if(perm!=='granted'){alert('لم يتم السماح بالإشعارات.');return;}
+    var reg=await navigator.serviceWorker.ready;
+    var kr=await fetch('api.php?do=vapid_key').then(r=>r.json());
+    if(!kr.key){alert('مفتاح الإشعارات غير مُعد.');return;}
+    var sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(kr.key)});
+    var res=await fetch('api.php?do=push_subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub})}).then(r=>r.json());
+    alert(res.ok?'تم تفعيل الإشعارات على هذا الجهاز ✅':'تعذّر التفعيل.');
+  }catch(e){console.log(e);alert('خطأ في تفعيل الإشعارات: '+e.message);}
+}
+setInterval(function(){
+  fetch('api.php?do=unread').then(r=>r.json()).then(function(d){
+    if(d&&typeof d.messages!=='undefined'){
+      var link=document.querySelector('.side-link[href="index.php?page=inbox"]');
+      if(!link)return;
+      var b=link.querySelector('.badge');
+      if(d.messages>0){ if(!b){b=document.createElement('span');b.className='badge';link.appendChild(b);} b.textContent=d.messages; }
+      else if(b){ b.remove(); }
+    }
+  }).catch(function(){});
+},25000);
+</script>
+</body></html>

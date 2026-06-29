@@ -74,17 +74,28 @@ $waActive = !empty(settings_get()['whatsapp']['enabled']);
         <?php else: $lastDay=''; foreach($thread as $m): $day=substr($m['ts'],0,10); ?>
           <?php if($day!==$lastDay){ $lastDay=$day; ?><div class="thread-day"><?= ar_date($day) ?></div><?php } ?>
           <div class="bubble <?= ($m['dir']==='out')?'out':'in' ?>">
-            <?= nl2br(h($m['text'])) ?>
+            <?php if(!empty($m['media_file'])): $mt=$m['media_type']??'image'; $src='media.php?f='.urlencode($m['media_file']); ?>
+              <?php if($mt==='image'||$mt==='sticker'): ?><a href="<?= $src ?>" target="_blank"><img class="bubble-img" src="<?= $src ?>" loading="lazy"></a>
+              <?php elseif($mt==='audio'): ?><audio controls src="<?= $src ?>" style="max-width:220px"></audio>
+              <?php elseif($mt==='video'): ?><video controls src="<?= $src ?>" class="bubble-img"></video>
+              <?php else: ?><a class="bubble-doc" href="<?= $src ?>" target="_blank">📄 ملف مرفق</a><?php endif; ?>
+            <?php endif; ?>
+            <?php if(trim($m['text'])!==''): ?><div><?= nl2br(h($m['text'])) ?></div><?php endif; ?>
             <span class="bubble-meta"><?= h(substr($m['ts'],11,5)) ?><?= ($m['via']??'')==='bot'?' · بوت':'' ?></span>
           </div>
         <?php endforeach; endif; ?>
       </div>
 
-      <form class="thread-reply" method="post" action="actions.php">
+      <div id="emojiBar" class="emoji-bar" style="display:none"></div>
+      <div id="imgPreview" class="img-preview" style="display:none"></div>
+      <form class="thread-reply" method="post" action="actions.php" enctype="multipart/form-data" id="replyForm">
         <input type="hidden" name="do" value="wa_reply">
         <input type="hidden" name="phone" value="<?= h($sel) ?>">
         <input type="hidden" name="return" value="index.php?page=inbox&phone=<?= h($sel) ?>">
-        <textarea name="text" id="replyBox" rows="1" placeholder="اكتبي ردّك..." required oninput="autoGrow(this)"></textarea>
+        <button class="reply-icon" type="button" title="إيموجي" onclick="toggleEmoji()">😊</button>
+        <button class="reply-icon" type="button" title="صورة" onclick="document.getElementById('imgInput').click()">📎</button>
+        <input type="file" name="image" id="imgInput" accept="image/*" style="display:none" onchange="showImg(this)">
+        <textarea name="text" id="replyBox" rows="1" placeholder="اكتبي ردّك..." oninput="autoGrow(this)"></textarea>
         <button class="btn btn-primary" type="submit" title="إرسال">➤</button>
       </form>
     <?php endif; ?>
@@ -96,6 +107,14 @@ function filterConvs(q){q=q.toLowerCase();document.querySelectorAll('.conv-item'
 function autoGrow(t){t.style.height='auto';t.style.height=Math.min(120,t.scrollHeight)+'px';}
 // مرّر لأسفل السلسلة
 var tb=document.getElementById('threadBody'); if(tb) tb.scrollTop=tb.scrollHeight;
+// لوحة الإيموجي
+var EMOJIS=['😊','😍','🥰','😘','💕','💅','🌸','🌷','✨','🎀','💖','👑','🤍','🙏','👍','🔥','😅','😂','🥳','💐','⭐','💎','📅','✅','❤️','😉','🌹','💁‍♀️','💆‍♀️','💄'];
+function toggleEmoji(){var b=document.getElementById('emojiBar');if(!b)return;if(b.innerHTML==='')EMOJIS.forEach(function(e){var s=document.createElement('span');s.textContent=e;s.onclick=function(){insertEmoji(e);};b.appendChild(s);});b.style.display=(b.style.display==='none')?'flex':'none';}
+function insertEmoji(e){var t=document.getElementById('replyBox');t.value+=e;t.focus();autoGrow(t);}
+function showImg(inp){var p=document.getElementById('imgPreview');if(inp.files&&inp.files[0]){var url=URL.createObjectURL(inp.files[0]);p.innerHTML='<img src="'+url+'"><button type="button" onclick="clearImg()">✕</button><span>الصورة جاهزة للإرسال</span>';p.style.display='flex';var rb=document.getElementById('replyBox');rb.removeAttribute('required');}}
+function clearImg(){document.getElementById('imgInput').value='';var p=document.getElementById('imgPreview');p.innerHTML='';p.style.display='none';}
+// منع إرسال فارغ (لا نص ولا صورة)
+var rf=document.getElementById('replyForm'); if(rf) rf.addEventListener('submit',function(ev){var t=document.getElementById('replyBox').value.trim();var f=document.getElementById('imgInput').files.length;if(!t&&!f){ev.preventDefault();}});
 // تحديث تلقائي كل 15ث (إلا إذا تكتبين)
 setInterval(function(){
   var r=document.getElementById('replyBox');
