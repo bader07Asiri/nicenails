@@ -108,17 +108,23 @@ case 'order_pay_remaining': {
     $orders = db_load('orders');
     $o = rec_find($orders, $id);
     if ($o) {
-        $newTotal = (float) p('final_total', $o['total']);
-        $remaining = max(0, $newTotal - ($o['deposit'] ?: 0));
+        $newTotal   = (float) p('final_total', $o['total']);
+        $grossRem   = max(0, $newTotal - ($o['deposit'] ?: 0));
+        // استخدام نقاط الولاء كخصم
+        $redeemed   = redeem_points($o['customer_id'] ?? '', (int)p('redeem_points',0), $grossRem);
+        $redeemVal  = points_value($redeemed);
+        $cashRem    = max(0, $grossRem - $redeemVal);
         rec_update('orders', $id, [
             'total'=>$newTotal, 'remaining_paid'=>true,
-            'paid'=>($o['deposit'] ?: 0) + $remaining, 'status'=>'completed',
+            'paid'=>($o['deposit'] ?: 0) + $cashRem, 'status'=>'completed',
+            'redeemed_points'=>$redeemed, 'redeem_value'=>$redeemVal,
         ]);
-        record_payment($o, 'remaining', $remaining);
-        // زيادة عدد زيارات العميلة + نقاط الولاء
+        record_payment($o, 'remaining', $cashRem);   // الإيراد = النقد فقط (النقاط خصم)
         bump_customer_visit($o['customer_id']);
         complete_linked_appt($id);
-        flash('ok', 'تم استلام باقي المبلغ — الطلب مكتمل ✅');
+        flash('ok', $redeemed>0
+            ? "تم إتمام الطلب ✅ — استُخدمت $redeemed نقطة كخصم (".money($redeemVal)." ﷼)"
+            : 'تم استلام باقي المبلغ — الطلب مكتمل ✅');
     }
     back('orders');
 }
@@ -368,6 +374,15 @@ case 'settings_save': {
     flash('ok','تم حفظ الإعدادات');
     back('settings');
 }
+case 'loyalty_save': {
+    $s = settings_get();
+    $s['loyalty']['enabled']     = p('loy_enabled','0')==='1';
+    $s['loyalty']['earn_per']    = max(1,(float)p('loy_earn_per', $s['loyalty']['earn_per'] ?? 10));
+    $s['loyalty']['point_value'] = max(0,(float)p('loy_point_value', $s['loyalty']['point_value'] ?? 1));
+    settings_save($s);
+    flash('ok','تم حفظ إعدادات برنامج الولاء');
+    back('settings');
+}
 case 'bot_save': {
     $s = settings_get();
     foreach (['greeting','booking_intro','booking_service_q','booking_link','to_human','course_info','samples'] as $k){
@@ -508,6 +523,7 @@ function record_payment($o, $type, $amount){
         'service_name'=>$o['service_name'] ?? '', 'type'=>$type, 'amount'=>(float)$amount,
     ];
     db_save('payments', $p);
+    if (!empty($o['customer_id'])) award_points($o['customer_id'], (float)$amount);
 }
 function bump_customer_visit($cid){
     if (!$cid) return;
@@ -515,7 +531,6 @@ function bump_customer_visit($cid){
     foreach ($list as &$c){
         if (($c['id']??'')===$cid){
             $c['visits']=($c['visits']??0)+1;
-            $c['points']=($c['points']??0)+1;
         }
     }
     unset($c); db_save('customers',$list);

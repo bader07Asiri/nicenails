@@ -59,6 +59,18 @@ function bot_reply($phone, $text, $settings=null){
         wa_state_set($phone,'menu'); return $bot['greeting']??'مرحباً!';
     }
 
+    // استفسار عن رصيد النقاط (برنامج الولاء)
+    if(mb_strpos($low,'نقاط')!==false || mb_strpos($low,'نقاطي')!==false || mb_strpos($low,'رصيد')!==false || mb_strpos($low,'ولاء')!==false){
+        $loy=loyalty_cfg();
+        if($loy['enabled']){
+            $cust=customer_by_phone($phone); $pts=(int)($cust['points']??0);
+            return "🎁 رصيد نقاطك: *{$pts}* نقطة
+💰 تعادل: *".money(points_value($pts))."* ريال
+
+تقدرين تستخدمينها كخصم على طلبك القادم 🌸";
+        }
+    }
+
     switch($step){
         // ── القائمة الرئيسية ─────────────────────────────────
         case 'menu':

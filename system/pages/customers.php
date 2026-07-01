@@ -35,7 +35,7 @@ foreach($orders as $o){ $cid=$o['customer_id']??''; if($cid){ $spend[$cid]=($spe
   <div class="card"><div class="empty"><div class="ei">👩</div>لا يوجد عملاء بعد — تُضاف تلقائياً عند أول تواصل واتساب</div></div>
 <?php else: ?>
 <div class="tbl-wrap"><table id="custTable"><thead><tr>
-  <th>الاسم</th><th>الجوال</th><th>الحالة</th><th>الزيارات</th><th>النقاط</th><th>إجمالي الإنفاق</th><th>ملاحظات</th><th></th>
+  <th>الاسم</th><th>الجوال</th><th>الحالة</th><th>الزيارات</th><th>النقاط</th><th>إجمالي الإنفاق</th><th>🔒 ملاحظة خاصة</th><th></th>
 </tr></thead><tbody>
 <?php foreach($list as $c): $cid=$c['id']; ?>
   <tr>
@@ -43,7 +43,7 @@ foreach($orders as $o){ $cid=$o['customer_id']??''; if($cid){ $spend[$cid]=($spe
     <td dir="ltr" style="text-align:right"><?= h($c['phone']) ?></td>
     <td><span class="tag t-<?= h($c['status']??'visitor') ?>"><?= $stm[$c['status']??'visitor']??$c['status'] ?></span></td>
     <td><?= (int)($c['visits']??0) ?></td>
-    <td><?php $pts=(int)($c['points']??0); ?><span title="كل 5 جلسات = مكافأة"><?= $pts ?> <?= $pts>=5?'🎁':'' ?></span></td>
+    <td><?php $pts=(int)($c['points']??0); ?><b><?= $pts ?></b> نقطة<?php if(loyalty_cfg()['enabled'] && $pts>0): ?><div class="muted" style="font-size:.72rem;color:var(--green)">= <?= money(points_value($pts)) ?> ﷼</div><?php endif; ?></td>
     <td><?= money($spend[$cid]??0) ?> ﷼</td>
     <td class="muted" style="max-width:160px"><?= h($c['notes']?:'—') ?></td>
     <td><div class="t-actions">
@@ -76,7 +76,7 @@ foreach($orders as $o){ $cid=$o['customer_id']??''; if($cid){ $spend[$cid]=($spe
     <div class="field"><label>الاسم</label><input type="text" name="name"></div>
     <div class="field"><label>رقم الجوال <span>*</span></label><input type="text" name="phone" dir="ltr" placeholder="05xxxxxxxx" required></div>
     <div class="field"><label>الحالة</label><select name="status"><option value="client">عميلة</option><option value="visitor">زائر</option><option value="trainee">متدربة</option></select></div>
-    <div class="field"><label>ملاحظات (حساسية، تفضيلات...)</label><textarea name="notes"></textarea></div>
+    <div class="field"><label>🔒 ملاحظة خاصة (تظهر لكِ فقط — حساسية، تفضيلات، تذكير)</label><textarea name="notes"></textarea></div>
   </div>
   <div class="modal-f"><button class="btn btn-primary" type="submit">حفظ</button><button class="btn btn-ghost" type="button" onclick="closeModal('mCust')">إلغاء</button></div>
 </form></div></div>
@@ -90,7 +90,7 @@ foreach($orders as $o){ $cid=$o['customer_id']??''; if($cid){ $spend[$cid]=($spe
     <div class="field"><label>الاسم</label><input type="text" name="name" id="ce_name"></div>
     <div class="field"><label>رقم الجوال</label><input type="text" name="phone" id="ce_phone" dir="ltr"></div>
     <div class="field"><label>الحالة</label><select name="status" id="ce_status"><option value="client">عميلة</option><option value="visitor">زائر</option><option value="trainee">متدربة</option></select></div>
-    <div class="field"><label>ملاحظات</label><textarea name="notes" id="ce_notes"></textarea></div>
+    <div class="field"><label>🔒 ملاحظة خاصة (تظهر لكِ فقط)</label><textarea name="notes" id="ce_notes" placeholder="مثال: تفضّل الأظافر القصيرة، حساسية من مادة معينة، عميلة مميزة..."></textarea></div>
   </div>
   <div class="modal-f"><button class="btn btn-primary" type="submit">حفظ التعديلات</button><button class="btn btn-ghost" type="button" onclick="closeModal('mCustEdit')">إلغاء</button></div>
 </form></div></div>

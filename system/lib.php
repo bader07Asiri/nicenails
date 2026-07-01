@@ -224,3 +224,62 @@ function trash_purge($trashId){
 
 // تفريغ السلة بالكامل — حذف نهائي لا رجعة فيه
 function trash_empty(){ db_save('trash', []); }
+
+// ═══════════════════════════════════════════════════════════
+//  برنامج الولاء (النقاط) + دوال مساعدة
+// ═══════════════════════════════════════════════════════════
+function loyalty_cfg() {
+    $s = settings_get();
+    $l = $s['loyalty'] ?? [];
+    return [
+        'enabled'     => !empty($l['enabled']),
+        'earn_per'    => (float)($l['earn_per'] ?? 10),   // كل كم ريال = نقطة
+        'point_value' => (float)($l['point_value'] ?? 1), // قيمة النقطة بالريال
+    ];
+}
+// قيمة عدد نقاط بالريال
+function points_value($points) {
+    $c = loyalty_cfg();
+    return round((int)$points * $c['point_value'], 2);
+}
+// إيجاد عميلة برقم الجوال
+function customer_by_phone($phone) {
+    $phone = normalize_phone($phone);
+    if (!$phone) return null;
+    foreach (db_load('customers') as $c) {
+        if (normalize_phone($c['phone'] ?? '') === $phone) return $c;
+    }
+    return null;
+}
+// منح نقاط بناءً على مبلغ مدفوع
+function award_points($cid, $amount) {
+    $c = loyalty_cfg();
+    if (!$c['enabled'] || !$cid || $amount <= 0 || $c['earn_per'] <= 0) return 0;
+    $pts = (int)floor($amount / $c['earn_per']);
+    if ($pts <= 0) return 0;
+    $list = db_load('customers');
+    foreach ($list as &$x) {
+        if (($x['id'] ?? '') === $cid) { $x['points'] = (int)($x['points'] ?? 0) + $pts; }
+    }
+    unset($x); db_save('customers', $list);
+    return $pts;
+}
+// استخدام (خصم) نقاط — يحدّها الرصيد وقيمة الفاتورة القصوى — يرجّع عدد النقاط المستخدمة فعلاً
+function redeem_points($cid, $points, $maxValue = null) {
+    $c = loyalty_cfg();
+    if (!$c['enabled'] || !$cid || $points <= 0) return 0;
+    $cust = null;
+    foreach (db_load('customers') as $x) { if (($x['id'] ?? '') === $cid) { $cust = $x; break; } }
+    if (!$cust) return 0;
+    $points = min((int)$points, (int)($cust['points'] ?? 0));
+    if ($maxValue !== null && $c['point_value'] > 0) {
+        $points = min($points, (int)floor($maxValue / $c['point_value']));
+    }
+    if ($points <= 0) return 0;
+    $list = db_load('customers');
+    foreach ($list as &$x) {
+        if (($x['id'] ?? '') === $cid) { $x['points'] = max(0, (int)($x['points'] ?? 0) - $points); }
+    }
+    unset($x); db_save('customers', $list);
+    return $points;
+}

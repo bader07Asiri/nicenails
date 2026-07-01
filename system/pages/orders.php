@@ -2,6 +2,9 @@
 $orders   = array_reverse(db_load('orders'));
 $services = db_load('services');
 $settings = settings_get();
+$loy = loyalty_cfg();
+$custPtsById = [];
+foreach (db_load('customers') as $c) { $custPtsById[$c['id']??''] = (int)($c['points']??0); }
 $filter = $_GET['filter'] ?? 'all';
 $stm=['pending'=>'بانتظار الدفع','confirmed'=>'عربون مدفوع','completed'=>'مكتمل','cancelled'=>'ملغي'];
 
@@ -80,7 +83,7 @@ function pay_link($settings,$order,$amount){
         elseif($o['payment_type']==='deposit' && !($o['remaining_paid']??false)):
           // إرسال/تأكيد الباقي مع تعديل المبلغ
       ?>
-          <button class="btn btn-sm btn-primary" onclick="openRemaining('<?= $o['id'] ?>','<?= h(addslashes($o['customer_name'])) ?>',<?= (float)$o['total'] ?>,<?= (float)($o['deposit']?:0) ?>)">💳 إرسال رابط الباقي</button>
+          <button class="btn btn-sm btn-primary" onclick="openRemaining('<?= $o['id'] ?>','<?= h(addslashes($o['customer_name'])) ?>',<?= (float)$o['total'] ?>,<?= (float)($o['deposit']?:0) ?>,<?= (int)($custPtsById[$o['customer_id']??'']??0) ?>,<?= (float)$loy['point_value'] ?>,<?= $loy['enabled']?1:0 ?>)">💳 إرسال رابط الباقي</button>
           <a class="btn btn-sm btn-wa" target="_blank" href="<?= h(wa_link($o['phone'])) ?>">واتساب</a>
       <?php else: ?>
           <span class="tag t-completed">✅ مدفوع بالكامل</span>
@@ -148,8 +151,13 @@ function pay_link($settings,$order,$amount){
     <p class="muted" style="margin-bottom:1rem">عدّلي المبلغ النهائي إذا أُضيفت خدمة إضافية، ثم أرسلي الرابط للعميلة.</p>
     <div class="field"><label>العميلة</label><input type="text" id="r_name" readonly style="background:var(--cream)"></div>
     <div class="field"><label>المبلغ النهائي الإجمالي (ريال)</label><input type="number" name="final_total" id="r_total" min="0" step="1" oninput="calcRemain2()"></div>
+    <div class="field" id="r_loyalty_wrap" style="display:none">
+      <label>🎁 استخدام نقاط الرصيد (المتاح: <b id="r_ptsavail">0</b> نقطة = <b id="r_ptsval">0</b> ﷼)</label>
+      <input type="number" name="redeem_points" id="r_redeem" min="0" step="1" value="0" oninput="calcRemain2()" placeholder="كم نقطة تبين تستخدمين؟">
+    </div>
     <div class="pay-box">
       <div class="pay-row"><span>العربون المدفوع</span><span id="r_dep">0</span></div>
+      <div class="pay-row" id="r_discount_row" style="display:none"><span>خصم النقاط</span><span style="color:var(--green)">- <b id="r_discount">0</b> ﷼</span></div>
       <div class="pay-row total"><span>المتبقي المطلوب</span><span><b id="r_remain">0</b> ﷼</span></div>
     </div>
   </div>
@@ -173,17 +181,34 @@ function pay_link($settings,$order,$amount){
 </form></div></div>
 
 <script>
-var _rDep=0;
-function openRemaining(id,name,total,dep){
+var _rDep=0,_rPts=0,_rPv=0,_rLoy=0;
+function openRemaining(id,name,total,dep,pts,pv,loy){
   document.getElementById('r_id').value=id;
   document.getElementById('r_name').value=name;
   document.getElementById('r_total').value=total;
   document.getElementById('r_dep').innerText=dep.toLocaleString()+' ﷼';
-  _rDep=dep; calcRemain2(); openModal('mRemain');
+  _rDep=dep; _rPts=pts||0; _rPv=pv||0; _rLoy=loy||0;
+  var rd=document.getElementById('r_redeem'); if(rd) rd.value=0;
+  var wrap=document.getElementById('r_loyalty_wrap');
+  if(wrap){ wrap.style.display=(_rLoy&&_rPts>0)?'block':'none';
+    document.getElementById('r_ptsavail').innerText=_rPts;
+    document.getElementById('r_ptsval').innerText=(_rPts*_rPv).toLocaleString();
+    if(rd) rd.max=_rPts; }
+  calcRemain2(); openModal('mRemain');
 }
 function calcRemain2(){
   var t=parseFloat(document.getElementById('r_total').value)||0;
-  var rem=Math.max(0,t-_rDep);
+  var gross=Math.max(0,t-_rDep);
+  var rd=document.getElementById('r_redeem');
+  var redeem=rd?(parseInt(rd.value)||0):0;
+  if(redeem>_rPts) redeem=_rPts;
+  if(_rPv>0){ var maxPts=Math.floor(gross/_rPv); if(redeem>maxPts) redeem=maxPts; }
+  if(redeem<0) redeem=0;
+  if(rd && String(redeem)!=rd.value) rd.value=redeem;
+  var disc=redeem*_rPv;
+  var drow=document.getElementById('r_discount_row');
+  if(drow){ drow.style.display=disc>0?'flex':'none'; document.getElementById('r_discount').innerText=disc.toLocaleString(); }
+  var rem=Math.max(0,gross-disc);
   document.getElementById('r_remain').innerText=rem.toLocaleString();
   var name=document.getElementById('r_name').value;
   var msg='مرحباً '+name+'، باقي مبلغ جلستكِ: '+rem.toLocaleString()+' ريال — ادفعي من هنا: [رابط الدفع]';

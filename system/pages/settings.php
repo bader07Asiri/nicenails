@@ -152,6 +152,24 @@ $webhookUrl = ($s['site_url']??'https://نطاقك') . '/system/whatsapp.php';
   </div>
 </div>
 
+<?php $loy = $s['loyalty'] ?? []; ?>
+<div class="card" style="margin-top:1.4rem">
+  <div class="card-h"><h3>🎁 برنامج الولاء (النقاط)</h3>
+    <span class="tag <?= !empty($loy['enabled'])?'t-paid':'t-pending' ?>"><?= !empty($loy['enabled'])?'مفعّل':'غير مفعّل' ?></span></div>
+  <form method="post" action="actions.php">
+    <input type="hidden" name="do" value="loyalty_save">
+    <div class="field"><label>الحالة</label>
+      <select name="loy_enabled"><option value="0" <?= empty($loy['enabled'])?'selected':'' ?>>غير مفعّل</option><option value="1" <?= !empty($loy['enabled'])?'selected':'' ?>>مفعّل</option></select>
+    </div>
+    <div class="frow">
+      <div class="field"><label>كل كم ريال = نقطة؟</label><input type="number" name="loy_earn_per" min="1" step="1" value="<?= h($loy['earn_per']??10) ?>"><span class="hint">مثال: 10 يعني كل 10 ريال مدفوعة = نقطة.</span></div>
+      <div class="field"><label>قيمة النقطة الواحدة (ريال)</label><input type="number" name="loy_point_value" min="0" step="0.1" value="<?= h($loy['point_value']??1) ?>"><span class="hint">مثال: 1 يعني النقطة = 1 ريال خصم.</span></div>
+    </div>
+    <div class="flash ok" style="margin:.4rem 0">💡 النقاط تُحسب تلقائياً عند دفع الطلبات، وتُعرض في صفحة العملاء، ويقدر البوت يرسل رصيد العميلة، وتُستخدم كخصم عند إتمام الطلب.</div>
+    <button class="btn btn-primary btn-block" type="submit">حفظ برنامج الولاء</button>
+  </form>
+</div>
+
 <div class="card" style="margin-top:1.4rem">
   <div class="card-h"><h3>كلمة المرور والأمان</h3></div>
   <p class="muted">لتغيير كلمة مرور الدخول، عدّلي السطر في ملف <code>system/config.php</code>:<br>
